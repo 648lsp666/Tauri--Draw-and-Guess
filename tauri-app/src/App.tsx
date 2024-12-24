@@ -1,12 +1,17 @@
-// import { useState } from "react";
-// import reactLogo from "./assets/react.svg";
-// import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
-import Home from "./pages/Home.tsx";
+import Home from "./pages/Home";
+import {HashRouter, Navigate, Route, Routes} from "react-router-dom";
+import Room from "./pages/Room";
 
 function App() {
   return (
-    <Home roomId={"test"}/>
+      <HashRouter>
+          <Routes>
+              <Route path={'/start'} element={<Home />} />
+              <Route path={'/room'} element={<Room />} />
+              <Route path={'*'} element={<Navigate to={'/start'} replace={true} />} />
+          </Routes>
+      </HashRouter>
   );
 }
 

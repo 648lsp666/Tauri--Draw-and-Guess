@@ -1,0 +1,32 @@
+.button  {
+  border: solid 3px #000;
+  background: transparent;
+  padding: 8px 15px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  &:hover {
+    background: #000;
+    color: #fff;
+  }
+}
+
+.normal {
+    font-size: 2rem;
+}
+
+.small {
+    font-size: 1em;
+}
+
+.large {
+    font-size: 3em;
+}
+
+.handdraw {
+  /*  can be shortened with border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;*/
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 255px;
+  border-bottom-right-radius: 255px 15px;
+  border-bottom-left-radius:15px 255px;
+}

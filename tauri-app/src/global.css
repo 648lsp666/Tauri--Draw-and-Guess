@@ -1,0 +1,26 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    /*font-family: Arial, sans-serif;*/
+}
+html, body{
+    height: 100vh;
+}
+#root{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Yozai Medium';
+}
+
+a{
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    &:hover{
+        color: #24c8db;
+    }
+}
