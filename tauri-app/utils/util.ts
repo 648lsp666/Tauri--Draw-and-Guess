@@ -3,3 +3,4 @@ export const getRandomRadius = () => {
     const random2 = Math.floor(Math.random() * 255);
     return `${random1}px ${random2}px`;
 };
+

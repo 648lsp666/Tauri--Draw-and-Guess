@@ -5,10 +5,11 @@ import Room from "./pages/Room";
 
 function App() {
   return (
+
       <HashRouter>
           <Routes>
               <Route path={'/start'} element={<Home />} />
-              <Route path={'/room'} element={<Room />} />
+              <Route path={`/room/:roomId`} element={<Room />} />
               <Route path={'*'} element={<Navigate to={'/start'} replace={true} />} />
           </Routes>
       </HashRouter>
