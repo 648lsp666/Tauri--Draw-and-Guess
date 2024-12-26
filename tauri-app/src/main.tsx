@@ -8,16 +8,16 @@ import {configureStore} from "@reduxjs/toolkit";
 import {userSlice} from "./redux/user.ts";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-      <Provider store={configureStore(
+    <React.StrictMode>
+        <Provider store={configureStore(
             {
                 reducer: {
                     user: userSlice.reducer,
                 },
                 middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}),
             },
-      )}>
-        <App />
-      </Provider>
-  </React.StrictMode>,
+        )}>
+            <App/>
+        </Provider>
+    </React.StrictMode>,
 );

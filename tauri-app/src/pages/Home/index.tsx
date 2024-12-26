@@ -2,15 +2,17 @@ import 'tldraw/tldraw.css';
 import styles from './index.module.less';
 import Button from "../../components/button";
 import Footer from "../../components/footer";
-import {Tldraw, TLShapeId, useEditor} from "tldraw";
+import {Tldraw, TLShapeId} from "tldraw";
 import {Editor} from "@tldraw/tldraw";
 import {useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
+import Modal from "../../components/modal";
 
 export default function Home() {
-    const [titleIds,setTitleIds] = useState<TLShapeId[]>([]);
-    const navigator = useNavigate();
-    const handleMount = (editor:Editor) => {
+    const [titleIds, setTitleIds] = useState<TLShapeId[]>([]);
+    const {name, id, avatar} = useSelector((state: any) => state.user.user);
+    console.log('user', name, id, avatar);
+    const handleMount = (editor: Editor) => {
         editor.createShape({
             type: 'text',
             x: 200,
@@ -22,7 +24,7 @@ export default function Home() {
         })
         editor.selectAll();
         editor.zoomToSelection({
-            animation: { duration: 0 },
+            animation: {duration: 0},
         });
         // editor.deselect();
         console.log(editor.getSelectedShapeIds());
@@ -32,6 +34,7 @@ export default function Home() {
 
     return (
         <div className={styles.home}>
+            {!name && <Modal/>}
             <Tldraw
                 onMount={handleMount}
                 className={styles.bg}
@@ -39,10 +42,10 @@ export default function Home() {
                 // cameraOptions={{ isLocked: true }}
             />
             <div className={styles.buttonlist}>
-                <Button text={'加入派对'} onClick={()=>{
+                <Button text={'加入派对'} onClick={() => {
                     // GlobalEditor.deleteShapes(titleIds);
                 }}></Button>
-                <Button text={'创建派对'} onClick={()=>{
+                <Button text={'创建派对'} onClick={() => {
                     const randomId = Math.random().toString(36).substring(7);
                     localStorage.setItem('roomId', randomId);
                     const url = new URL(`/#/room/${randomId}`, window.location.href);
@@ -50,7 +53,7 @@ export default function Home() {
                     // GlobalEditor.deleteShapes(titleIds);
                 }}></Button>
             </div>
-            <Footer />
+            <Footer/>
         </div>
     )
 }

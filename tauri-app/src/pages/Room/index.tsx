@@ -2,94 +2,110 @@ import 'tldraw/tldraw.css';
 import styles from './index.module.less';
 import {useParams} from "react-router-dom";
 import {InstancePresenceRecordType, Tldraw} from "tldraw";
-import {useSyncDemo} from "@tldraw/sync";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useRef} from "react";
 // import {User} from "../../redux/user.ts";
 import {useDispatch, useSelector} from "react-redux";
 // import { useDispatch } from 'react-redux';
-import {CURSOR_CHAT_MESSAGE, MOVING_CURSOR_SPEED, USER_ID, USER_NAME} from "../../mock/GlobalMock.ts";
-import {setUser, UserWithCursor} from "../../redux/user.ts";
-import {throttle} from "@tldraw/tldraw";
+import {CURSOR_CHAT_MESSAGE} from "../../mock/GlobalMock.ts";
+import {useSyncDemo} from "@tldraw/sync";
 // import {window} from "@tauri-apps/api";
 
 export default function Room() {
-    // let roomId = localStorage.getItem('roomId');
-    // if (!roomId) {
-    //     roomId = Math.random().toString(36).substring(7);
-    //     localStorage.setItem('roomId', roomId);
-    // }
-    // const store = useSyncDemo({ roomId })
     const roomId = useParams().roomId;
-    const {name, id} = useSelector((state: any) => state.user);
-    // const room = useSelector((state: any) => state.room);
-    // console.log(room);
+    const {name, id} = useSelector((state: any) => state.user.user);
+    // const [webSocket, sendMessage] = useWebSocket({
+    //     url: 'ws://localhost:3000',  //这里放长链接
+    //     onOpen: () => {
+    //         //连接成功
+    //         sendMessage({type: 'join', data: roomId});
+    //     },
+    //     onClose: () => {
+    //         //连接关闭
+    //         console.log('WebSocket disconnected');
+    //     },
+    //     onError: (event) => {
+    //         //连接异常
+    //         console.error('WebSocket error:', event);
+    //     },
+    //     onMessage: (message) => {
+    //         //收到消息
+    //         console.log('WebSocket received message:', message);
+    //         dispatch(setRoom(message));
+    //     },
+    // });
 
     const dispatch = useDispatch();
     if (!roomId) {
         console.log('no roomId');
         return <div>wrong roomId</div>;
     }
-    useEffect(() => {
-        try {
-            const socket = new WebSocket('ws://localhost:3000');
-            socket.onopen = () => {
-                console.log('socket opened');
-                socket.send(JSON.stringify({ type: 'join', roomId }));
-            }
-            socket.onclose = () => {
-                console.log('socket closed');
-            }
-            socket.onmessage = (event) => {
-                // console.log(event.data);
-            }
-            const broadcast = (data: UserWithCursor) => {
-                socket.send(JSON.stringify({ type: 'broadcast', data }));
-            };
-            const throttleBroadcast = throttle(broadcast, 100);
-            const handleMouseMove = (e: MouseEvent) => {
-                throttleBroadcast({
-                    name: USER_NAME,
-                    id: USER_ID,
-                    cursor: {
-                        x: e.clientX,
-                        y: e.clientY,
-                        type: 'default',
-                        rotation: 0,
-                    },
-                    chatMessage: '',
-                });
-            }
-            document.addEventListener('mousemove',handleMouseMove);
-
-            return () => {
-                socket.send(JSON.stringify({ type: 'leave', roomId }));
-                document.removeEventListener('mousemove', handleMouseMove);
-                socket.close();
-            }
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }, [roomId]);
-    const store = useSyncDemo({ roomId })
+    // useEffect(() => {
+    //     const broadcast = (data: UserWithCursor) => {
+    //         sendMessage({type: 'broadcast', data});
+    //     };
+    //     const throttleBroadcast = throttle(broadcast, 100);
+    //     const handleMouseMove = (e: MouseEvent) => {
+    //         throttleBroadcast({
+    //             name: name,
+    //             id: id,
+    //             cursor: {
+    //                 x: e.clientX,
+    //                 y: e.clientY,
+    //                 type: 'default',
+    //                 rotation: 0,
+    //             },
+    //             chatMessage: '',
+    //         });
+    //     }
+    //     document.addEventListener('mousemove', handleMouseMove);
+    //
+    //     return () => {
+    //         // webSocket?.close();
+    //         document.removeEventListener('mousemove', handleMouseMove);
+    //     }
+    // }, [roomId]);
+    const store = useSyncDemo({roomId})
     const rRaf = useRef<any>(-1);
 
-    useEffect(()=>{
+    useEffect(() => {
         // dispatch(setUser({name: USER_NAME, id: USER_ID, avatar: ''}));
-        dispatch(setUser({name: USER_NAME, id: Math.random().toString(36).substring(7), avatar: ''}));
-    },[]);
+        // dispatch(setUser({name: USER_NAME, id: Math.random().toString(36).substring(7), avatar: ''}));
+    }, []);
 
     return (
         <div className={styles.room}>
+            <div className={styles.roomState}>
+                <div className={styles.roomStateTitle}>
+                    <span>Room:</span>
+                    <span>{roomId}</span>
+                    <div className={styles.link} onClick={() => {
+                        navigator.clipboard.writeText(window.location.href).then(() => {
+                            alert('Copied to clipboard');
+                        });
+                    }}>
+                        <h3>邀请朋友一起玩！</h3>
+                        {window.location.href}
+                        <h3>点击复制url</h3>
+                    </div>
+                </div>
+                <div className={styles.roomStateItem}>
+                    <span>User ID:</span>
+                    <span>{id}</span>
+                </div>
+                <div className={styles.roomStateItem}>
+                    <span>User Name:</span>
+                    <span>{name}</span>
+                </div>
+            </div>
             <div className={styles.Tldraw}>
                 <Tldraw store={store} onMount={(editor) => {
                     // [a]
                     const peerPresence = InstancePresenceRecordType.create({
                         id: InstancePresenceRecordType.createId(editor.store.id),
                         currentPageId: editor.getCurrentPageId(),
-                        userId: `peer-${id}`,
-                        userName: name ? name : USER_NAME,
-                        cursor: { x: 0, y: 0, type: 'default', rotation: 0 },
+                        userId: id,
+                        userName: name,
+                        cursor: {x: 0, y: 0, type: 'default', rotation: 0},
                         chatMessage: CURSOR_CHAT_MESSAGE,
                     })
 
@@ -113,22 +129,8 @@ export default function Room() {
 
                             cursor = {
                                 ...cursor,
-                                x: Math.random() ,
+                                x: Math.random(),
                                 y: 1 + Math.random(),
-                            }
-
-                            if (CURSOR_CHAT_MESSAGE) {
-                                const k = 1000
-                                const t = (now % (k * 3)) / k
-                                chatMessage =
-                                    t < 1
-                                        ? ''
-                                        : t > 2
-                                            ? CURSOR_CHAT_MESSAGE
-                                            : CURSOR_CHAT_MESSAGE.slice(
-                                                0,
-                                                Math.ceil((t - 1) * CURSOR_CHAT_MESSAGE.length)
-                                            )
                             }
 
                             editor.store.mergeRemoteChanges(() => {
@@ -148,15 +150,17 @@ export default function Room() {
                         rRaf.current = editor.timers.requestAnimationFrame(loop)
                     } else {
                         editor.store.mergeRemoteChanges(() => {
-                            editor.store.put([{ ...peerPresence, lastActivityTimestamp: Date.now() }])
+                            editor.store.put([{...peerPresence, lastActivityTimestamp: Date.now()}])
                         })
                         rRaf.current = editor.timers.setInterval(() => {
                             editor.store.mergeRemoteChanges(() => {
-                                editor.store.put([{ ...peerPresence, lastActivityTimestamp: Date.now() }])
+                                editor.store.put([{...peerPresence, lastActivityTimestamp: Date.now()}])
                             })
                         }, 1000)
                     }
-                }} deepLinks />
+                }} deepLinks/>
+
+
             </div>
         </div>
     )

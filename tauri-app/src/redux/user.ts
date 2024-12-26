@@ -1,9 +1,10 @@
-import { createSlice } from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 
 export interface User {
     name: string;
     id: string;
     avatar?: string;
+    belongTo?: string;
 }
 
 export interface UserWithCursor extends User {
@@ -12,6 +13,7 @@ export interface UserWithCursor extends User {
         y: number;
         type: string;
         rotation: number;
+        color?: string;
     };
     chatMessage: string;
 }
@@ -50,6 +52,18 @@ export const userSlice = createSlice({
         setRoom(state, action) {
             state.room = action.payload;
         },
+        updateRoomUser(state, action: PayloadAction<UserWithCursor>) {
+            let flag = 1;
+            state.room.users.forEach(user => {
+                if (user.id === action.payload.id) {
+                    Object.assign(user, action.payload);
+                    flag = 0;
+                }
+            })
+            if (flag) {
+                state.room.users.push(action.payload);
+            }
+        },
     },
     // extraReducers: (builder) => {
     //     builder
@@ -59,6 +73,7 @@ export const userSlice = createSlice({
     // },
 });
 
-export const { setUser, setRoom } = userSlice.actions;
+
+export const {setUser, setRoom, updateRoomUser} = userSlice.actions;
 
 export default userSlice.reducer;

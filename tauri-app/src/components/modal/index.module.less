@@ -1,0 +1,47 @@
+.modal {
+  z-index: 1000;
+  position: absolute;
+  border: #0f0f0f solid 3px;
+  padding: 18px 24px;
+  font-size: 24px;
+  background-color: #fff;
+
+  & .modalContent {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    & .modalInput {
+      margin: 12px;
+      width: 100%;
+      font-family: "Yozai Medium";
+      font-size: 20px;
+      padding: 6px 12px;
+      border: #2f2f2f solid 2px;
+    }
+  }
+}
+
+.mask {
+  display: flex; /* 默认隐藏模态框 */
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  position: fixed; /* 固定定位 */
+  z-index: 1000; /* 确保模态框在最上层 */
+  left: 0;
+  top: 0;
+  width: 100%; /* 全宽 */
+  height: 100%; /* 全高 */
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+}
+
+
+.handdraw {
+  /*  can be shortened with border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;*/
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 255px;
+  border-bottom-right-radius: 255px 15px;
+  border-bottom-left-radius: 15px 255px;
+}
