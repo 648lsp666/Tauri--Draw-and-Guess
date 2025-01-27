@@ -11,10 +11,20 @@ import {TLUserPreferences} from "tldraw";
 //     chatMessage: string;
 // }
 
+export interface userWithState extends TLUserPreferences {
+    currentRole: 'drawer' | 'guesser' | 'spectator';
+    score: number;
+}
+
+export interface chatMessage {
+    sender: string;
+    message: string;
+}
+
 export interface Room {
     id: string;
-    users: TLUserPreferences[];
-    chatMessages?: string[];
+    users: userWithState[];
+    chatMessages?: chatMessage[];
 }
 
 export interface UserState {

@@ -11,7 +11,7 @@ import Model from "../../components/model";
 import {useDispatch, useSelector} from "react-redux";
 import {selectUser, setUser} from "../../redux/user.ts";
 
-export default function Home() {
+export default function HomeComponent() {
     // const [titleIds,setTitleIds] = useState<TLShapeId[]>([]);
     const navigator = useNavigate();
     const localRoom = localStorage.getItem('room');

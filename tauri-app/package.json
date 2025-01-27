@@ -17,6 +17,7 @@
     "@tldraw/sync": "^3.6.1",
     "@tldraw/tldraw": "^3.6.1",
     "classnames": "^2.5.1",
+    "emoji-picker-react": "^4.12.0",
     "goeasy": "^2.13.11",
     "lodash": "^4.17.21",
     "react": "^18.3.1",

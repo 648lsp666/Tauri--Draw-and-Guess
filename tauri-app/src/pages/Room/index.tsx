@@ -8,8 +8,8 @@ import {useDispatch, useSelector} from "react-redux";
 import GoEasy from 'goeasy';
 // import { useDispatch } from 'react-redux';
 import {CURSOR_CHAT_MESSAGE, MOVING_CURSOR_SPEED, USER_ID, USER_NAME} from "../../mock/GlobalMock.ts";
-import {selectRoom, setUser} from "../../redux/user.ts";
-
+import {selectRoom, setUser, Room, setRoom} from "../../redux/user.ts";
+import {Emoji} from "emoji-picker-react";
 
 const components: TLComponents = {
     PageMenu: null,
@@ -20,7 +20,7 @@ const components: TLComponents = {
     DebugMenu: null,
     // HelpMenu: null,
     KeyboardShortcutsDialog: null,
-    SharePanel: null,
+    SharePanel: sharePanel,
     TopPanel: TopPanel,
     // MainMenu: null,
     // NavigationPanel: null,
@@ -50,11 +50,46 @@ function TopPanel() {
         }
         // console.log(room);
     }, [timer]);
-    return <h1>TopPanel, {timer}</h1>
+    return (
+        <>
+            <h1>TopPanel, {timer}</h1>
+            <div className={styles.progress}>
+                <div className={styles.progressbar} style={{
+                    width: `${timer * 100 / 60}%`,
+                }}></div>
+            </div>
+        </>
+    )
 }
 
+function sharePanel() {
+    const room = useSelector(selectRoom);
+    console.log(room);
+    const renderAward = (idx: number) => {
+        if (idx === 0) {
+            return <Emoji unified={'1f947'} size={32} />;
+        } else if (idx === 1) {
+            return <Emoji unified={'1f948'} size={32} />;
+        } else if (idx === 2) {
+            return <Emoji unified={'1f949'} size={32}/>;
+        }
+    }
+    return (
+        <div className={styles.userlist}>
+            {room.users.map((user, idx) =>(
+                <div key={user.id} className={styles.user}>
+                    <div className={styles.label} style={{color: user.color}}>
+                        {renderAward(idx)}
+                    </div>
+                    <Emoji unified={'1f977'} size={54} />
+                    <div className={styles.name} style={{color: user.color}}>{user.name}</div>
+                </div>
+            ))}
+        </div>
+    )
+}
 
-export default function Room({
+export default function RoomComponent({
     user,
                              }:
                                  {
@@ -77,7 +112,7 @@ export default function Room({
     const [userPreferences, setUserPreferences] = useState<TLUserPreferences>(user);
     const store = useSyncDemo({ roomId, userInfo: userPreferences });
     const TLuser = useTldrawUser({ userPreferences, setUserPreferences });
-    console.log(user);
+    // const [isConnected, setIsConnected] = useState(false);
     let goEasy;
 
     useEffect(()=>{
@@ -89,9 +124,9 @@ export default function Room({
             });
             goEasy.connect({
                 id: user.id,
-                data:{'nickname':user.name},
+                data:{'nickname':user.name, 'color': user.color},
                 onSuccess: function () { //连接成功
-                    console.log("GoEasy connect successfully.") //连接成功
+                    // setIsConnected(true);
                 },
                 onFailed: function (error) { //连接失败
                     console.log("Failed to connect GoEasy, code:" + error.code + ",error:" + error.content);
@@ -106,7 +141,8 @@ export default function Room({
                     console.log("Channel:" + message.channel + " content:" + message.content);
                 },
                 onSuccess: function () {
-                    console.log("Channel订阅成功。");
+                    // console.log("Channel订阅成功。");
+                    // setIsConnected(true);
                 },
                 onFailed: function (error) {
                     console.log("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
@@ -127,11 +163,22 @@ export default function Room({
                 limit: 20, //可选项，定义返回的最新上线成员列表的数量，默认为10，最多支持返回最新上线的100个成员
                 onSuccess: function (response) {  //获取成功
                     alert("hereNow response: " + JSON.stringify(response));//json格式的response
+                    const roomPresence: Room = {
+                        id: roomId,
+                        users: response.content.members.map(member => ({
+                            id: member.id,
+                            name: member.data.nickname,
+                            color: member.data.color,
+                        } as TLUserPreferences)),
+                    }
+                    dispatch(setRoom(roomPresence));
+                    console.log('room', roomId);
                 },
                 onFailed: function (error) { //获取失败
                     console.log("Failed to obtain online clients, code:"+error.code+ ",error:"+error.content);
                 }
             });
+
         },0);
         return () => {
 
