@@ -4,6 +4,7 @@ import Button from "../button";
 import {useDispatch} from "react-redux";
 import {useState} from "react";
 import {setUser} from "../../redux/user.ts";
+import {useNavigate} from "react-router-dom";
 
 interface ModalProps {
     visible: boolean;
@@ -13,6 +14,7 @@ interface ModalProps {
 export default function Modal() {
     const dispatch = useDispatch();
     const [userName, setUserName] = useState('');
+    const navigator = useNavigate();
     return (
         <div className={styles.mask}>
             <div className={cls(styles.modal, styles.handdraw)}>
@@ -28,11 +30,15 @@ export default function Modal() {
                         }}
                     />
                     <Button text={"开始绘画！"} onClick={() => {
+                        const id = `peer-${Math.random().toString(36).substring(4)}`;
                         dispatch(setUser({
                             name: userName,
-                            id: `peer-${Math.random().toString(36).substring(4)}`,
+                            id: id,
                             avatar: ''
                         }));
+                        localStorage.setItem('user', userName);
+                        localStorage.setItem('id', id);
+                        window.history.back();
                     }}></Button>
                 </div>
             </div>

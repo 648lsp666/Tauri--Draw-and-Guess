@@ -5,13 +5,9 @@ import Footer from "../../components/footer";
 import {Tldraw, TLShapeId} from "tldraw";
 import {Editor} from "@tldraw/tldraw";
 import {useState} from "react";
-import {useSelector} from "react-redux";
-import Modal from "../../components/modal";
 
 export default function Home() {
     const [titleIds, setTitleIds] = useState<TLShapeId[]>([]);
-    const {name, id, avatar} = useSelector((state: any) => state.user.user);
-    console.log('user', name, id, avatar);
     const handleMount = (editor: Editor) => {
         editor.createShape({
             type: 'text',
@@ -34,7 +30,6 @@ export default function Home() {
 
     return (
         <div className={styles.home}>
-            {!name && <Modal/>}
             <Tldraw
                 onMount={handleMount}
                 className={styles.bg}

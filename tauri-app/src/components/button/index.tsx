@@ -1,11 +1,14 @@
 import styles from './index.module.less';
 import cls from 'classnames';
 import styled from "styled-components";
+import React from "react";
 
 export interface ButtonProps {
     text: string;
     size?: 'small' | 'normal' | 'large';
     onClick?: () => void;
+    className?: string;
+    style?: React.CSSProperties;
 }
 
 // const getTlBrRadius = () => {
@@ -35,10 +38,11 @@ const StyledButton = styled.div`
 `;
 
 export default function Button(props: ButtonProps) {
-    const className = cls(styles.button, props.size ? styles[props.size] : styles.normal, styles.handdraw);
+    const className = cls(styles.button, props.size ? styles[props.size] : styles.normal, styles.handdraw, props.className);
     return (
         <StyledButton className={className}
-                      // tlbr={getTlBrRadius} trbl={getTrBlRadius}
+                      style={props.style}
+            // tlbr={getTlBrRadius} trbl={getTrBlRadius}
                       onClick={props.onClick}>
             {props.text}
         </StyledButton>
