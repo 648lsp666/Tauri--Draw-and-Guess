@@ -1,31 +1,34 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+import {TLUserPreferences} from "tldraw";
 
-export interface User {
-    name: string;
-    id: string;
-    avatar?: string;
-    belongTo?: string;
+// export interface UserWithCursor extends TLUserPreferences {
+//     cursor: {
+//         x: number;
+//         y: number;
+//         type: string;
+//         rotation: number;
+//     };
+//     chatMessage: string;
+// }
+
+export interface userWithState extends TLUserPreferences {
+    currentRole: 'drawer' | 'guesser' | 'spectator';
+    score: number;
 }
 
-export interface UserWithCursor extends User {
-    cursor: {
-        x: number;
-        y: number;
-        type: string;
-        rotation: number;
-        color?: string;
-    };
-    chatMessage: string;
+export interface chatMessage {
+    sender: string;
+    message: string;
 }
 
 export interface Room {
-    users: UserWithCursor[];
-    chatMessages: string[];
-    shapes: any[];
+    id: string;
+    users: userWithState[];
+    chatMessages?: chatMessage[];
 }
 
 export interface UserState {
-    user: User;
+    user: TLUserPreferences;
     room: Room;
 }
 
@@ -33,12 +36,12 @@ const initialState: UserState = {
     user: {
         name: '',
         id: '',
-        avatar: '',
+        color: '',
     },
     room: {
+        id: '',
         users: [],
         chatMessages: [],
-        shapes: [],
     },
 };
 
@@ -47,7 +50,7 @@ export const userSlice = createSlice({
     initialState,
     reducers: {
         setUser(state, action) {
-            state.user = action.payload;
+            Object.assign(state.user, action.payload);
         },
         setRoom(state, action) {
             state.room = action.payload;
@@ -73,6 +76,9 @@ export const userSlice = createSlice({
     // },
 });
 
+export const selectUser = (state: UserState) => state.user.user;
+
+export const selectRoom = (state: UserState) => state.user.room;
 
 export const {setUser, setRoom, updateRoomUser} = userSlice.actions;
 

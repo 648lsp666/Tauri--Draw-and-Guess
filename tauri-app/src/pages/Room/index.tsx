@@ -1,25 +1,110 @@
 import 'tldraw/tldraw.css';
 import styles from './index.module.less';
 import {useParams} from "react-router-dom";
-import {InstancePresenceRecordType, Tldraw} from "tldraw";
-import {useEffect, useRef} from "react";
-// import {User} from "../../redux/user.ts";
-import {useDispatch, useSelector} from "react-redux";
-// import { useDispatch } from 'react-redux';
-import {CURSOR_CHAT_MESSAGE} from "../../mock/GlobalMock.ts";
+import {InstancePresenceRecordType, TLComponents, Tldraw, TLUserPreferences, useTldrawUser} from "tldraw";
 import {useSyncDemo} from "@tldraw/sync";
-import {useGoEasy} from "../../hooks/useGoeasy.tsx";
-import Button from "../../components/button";
-import GameBoardSVG from "@/assets/svgs/cardboard.svg?react";
-import PencilSVG from "@/assets/svgs/pencil.svg?react";
-import {Editor} from "@tldraw/tldraw";
-// import {window} from "@tauri-apps/api";
+import {useEffect, useRef, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import GoEasy from 'goeasy';
+// import { useDispatch } from 'react-redux';
+import {CURSOR_CHAT_MESSAGE, MOVING_CURSOR_SPEED, USER_ID, USER_NAME} from "../../mock/GlobalMock.ts";
+import {selectRoom, setUser, Room, setRoom} from "../../redux/user.ts";
+import {Emoji} from "emoji-picker-react";
 
-export default function Room() {
+const components: TLComponents = {
+    PageMenu: null,
+    MainMenu: null,
+    ZoomMenu: null,
+    ActionsMenu: null,
+    ContextMenu: null,
+    DebugMenu: null,
+    // HelpMenu: null,
+    KeyboardShortcutsDialog: null,
+    SharePanel: sharePanel,
+    TopPanel: TopPanel,
+    // MainMenu: null,
+    // NavigationPanel: null,
+    // PageMenu: null,
+    QuickActions: null,
+    // StylePanel: null,
+    // Toolbar: null,
+    // ZoomMenu: null,
+}
+
+function TopPanel() {
+    const room = useSelector(selectRoom);
+    const [timer, setTimer] = useState(60);
+    const startTimer = () => {
+        const timerId = setInterval(() => {
+            setTimer((prev) => prev - 1);
+        }, 1000);
+        return () => clearInterval(timerId);
+    }
+
+    useEffect(startTimer, []);
+    useEffect(() => {
+        // console.log(user);
+        if (timer === 0) {
+            console.log('时间到');
+            setTimer(60);
+        }
+        // console.log(room);
+    }, [timer]);
+    return (
+        <>
+            <h1>TopPanel, {timer}</h1>
+            <div className={styles.progress}>
+                <div className={styles.progressbar} style={{
+                    width: `${timer * 100 / 60}%`,
+                }}></div>
+            </div>
+        </>
+    )
+}
+
+function sharePanel() {
+    const room = useSelector(selectRoom);
+    console.log(room);
+    const renderAward = (idx: number) => {
+        if (idx === 0) {
+            return <Emoji unified={'1f947'} size={32} />;
+        } else if (idx === 1) {
+            return <Emoji unified={'1f948'} size={32} />;
+        } else if (idx === 2) {
+            return <Emoji unified={'1f949'} size={32}/>;
+        }
+    }
+    return (
+        <div className={styles.userlist}>
+            {room.users.map((user, idx) =>(
+                <div key={user.id} className={styles.user}>
+                    <div className={styles.label} style={{color: user.color}}>
+                        {renderAward(idx)}
+                    </div>
+                    <Emoji unified={'1f977'} size={54} />
+                    <div className={styles.name} style={{color: user.color}}>{user.name}</div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+export default function RoomComponent({
+    user,
+                             }:
+                                 {
+                                        user: TLUserPreferences | null;
+                                 }) {
+    if (!user?.id) {
+        console.log('no user');
+        setTimeout(()=>{
+            window.location.href = '/#/home';
+        },1000);
+        return <h1>哼，看来阁下还没有自己的名号，继续潜行吧。</h1>;
+    }
     const roomId = useParams().roomId;
     const {name, id} = useSelector((state: any) => state.user.user);
     const {users} = useSelector((state: any) => state.user.room);
-    const goEasy = useGoEasy();
     console.log(users);
     if (!id) {
         window.location.href = `/#/start`;
@@ -29,110 +114,90 @@ export default function Room() {
         console.log('no roomId');
         return <div>wrong roomId</div>;
     }
-    const store = useSyncDemo({roomId})
-    const rRaf = useRef<any>(-1);
+    // const rRaf = useRef<any>(-1);
+    const [userPreferences, setUserPreferences] = useState<TLUserPreferences>(user);
+    const store = useSyncDemo({ roomId, userInfo: userPreferences });
+    const TLuser = useTldrawUser({ userPreferences, setUserPreferences });
+    // const [isConnected, setIsConnected] = useState(false);
+    let goEasy;
 
-
-    useEffect(() => {
-        // dispatch(setUser({name: USER_NAME, id: USER_ID, avatar: ''}));
-        // dispatch(setUser({name: USER_NAME, id: Math.random().toString(36).substring(7), avatar: ''}));
-    }, []);
-
-    const onMount = (editor: Editor) => {
-        // [a]
-        const peerPresence = InstancePresenceRecordType.create({
-            id: InstancePresenceRecordType.createId(editor.store.id),
-            currentPageId: editor.getCurrentPageId(),
-            userId: id,
-            userName: name,
-            cursor: {x: 0, y: 0, type: 'default', rotation: 0},
-            chatMessage: CURSOR_CHAT_MESSAGE,
-        })
-
-        console.log(peerPresence);
-
-        editor.store.mergeRemoteChanges(() => {
-            editor.store.put([peerPresence])
-        })
-
-        // [b]
-        const raf = rRaf.current;
-        cancelAnimationFrame(raf);
-
-        if (true) {
-            function loop() {
-                let cursor = peerPresence.cursor
-                if (!cursor) return
-                let chatMessage = peerPresence.chatMessage
-
-                const now = Date.now()
-
-                cursor = {
-                    ...cursor,
-                    x: Math.random(),
-                    y: 1 + Math.random(),
+    useEffect(()=>{
+        setTimeout(()=>{
+            goEasy = GoEasy.getInstance({
+                host: 'hangzhou.goeasy.io', //新加坡host：singapore.goeasy.io
+                appkey: "BC-1eadd97ec64d4f6cb391e3bfc1d84d5f", //替换为您的应用appkey
+                modules: ['pubsub']
+            });
+            goEasy.connect({
+                id: user.id,
+                data:{'nickname':user.name, 'color': user.color},
+                onSuccess: function () { //连接成功
+                    // setIsConnected(true);
+                },
+                onFailed: function (error) { //连接失败
+                    console.log("Failed to connect GoEasy, code:" + error.code + ",error:" + error.content);
                 }
-
-                editor.store.mergeRemoteChanges(() => {
-                    editor.store.put([
-                        {
-                            ...peerPresence,
-                            cursor,
-                            chatMessage,
-                            lastActivityTimestamp: now,
-                        },
-                    ])
-                })
-
-                rRaf.current = editor.timers.requestAnimationFrame(loop)
-            }
-
-            rRaf.current = editor.timers.requestAnimationFrame(loop)
-        } else {
-            editor.store.mergeRemoteChanges(() => {
-                editor.store.put([{...peerPresence, lastActivityTimestamp: Date.now()}])
+            });
+            goEasy.pubsub.subscribe({
+                channel:roomId,
+                presence:{
+                    enable: true
+                },
+                onMessage: function (message) { //收到消息
+                    console.log("Channel:" + message.channel + " content:" + message.content);
+                },
+                onSuccess: function () {
+                    // console.log("Channel订阅成功。");
+                    // setIsConnected(true);
+                },
+                onFailed: function (error) {
+                    console.log("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
+                }
             })
-            rRaf.current = editor.timers.setInterval(() => {
-                editor.store.mergeRemoteChanges(() => {
-                    editor.store.put([{...peerPresence, lastActivityTimestamp: Date.now()}])
-                })
-            }, 1000)
-        }
-    }
+            goEasy.pubsub.publish({
+                channel: roomId,//替换为您自己的channel
+                message: '123',
+                onSuccess:function(){
+                    console.log("消息发布成功。");
+                },
+                onFailed: function (error) {
+                    console.log("消息发送失败，错误编码："+error.code+" 错误信息："+error.content);
+                }
+            });
+            goEasy.pubsub.hereNow({
+                channel: roomId,
+                limit: 20, //可选项，定义返回的最新上线成员列表的数量，默认为10，最多支持返回最新上线的100个成员
+                onSuccess: function (response) {  //获取成功
+                    alert("hereNow response: " + JSON.stringify(response));//json格式的response
+                    const roomPresence: Room = {
+                        id: roomId,
+                        users: response.content.members.map(member => ({
+                            id: member.id,
+                            name: member.data.nickname,
+                            color: member.data.color,
+                        } as TLUserPreferences)),
+                    }
+                    dispatch(setRoom(roomPresence));
+                    console.log('room', roomId);
+                },
+                onFailed: function (error) { //获取失败
+                    console.log("Failed to obtain online clients, code:"+error.code+ ",error:"+error.content);
+                }
+            });
+
+        },0);
+        return () => {
+
+            }
+    },[]);
+
+
+
     return (
         <div className={styles.room}>
-            <div className={styles.roomState}>
-                <div className={styles.roomStateTitle}>
-                    <span>Ninja<GameBoardSVG/></span>
-                    <span>Draw<PencilSVG/></span>
-                </div>
-                <h1>邀请你的忍者同伙一起！</h1>
-                <div className={styles.buttonlist}>
-                    <Button text={"复制url"} onClick={() => {
-                        navigator.clipboard.writeText(window.location.href).then(() => {
-                            alert('Copied to clipboard');
-                        });
-                    }}/>
-                    <Button text={"二维码"} onClick={() => {
-                        navigator.clipboard.writeText(window.location.href).then(() => {
-                            alert('Copied to clipboard');
-                        });
-                    }}/>
-                </div>
-                <div className={styles.roomStateItem}>
-                    <span>User Name:</span>
-                    <span>{name}</span>
-                </div>
-                <div className={styles.roomStateItem}>
-                    <div>Chat:</div>
-                </div>
+            <div className={styles.Tldraw}>
+                <Tldraw store={store} components={components} user={TLuser}/>
             </div>
-            <Tldraw store={store}
-                    className={styles.Tldraw}
-                    onMount={onMount}
-                    user={}
-                    deepLinks
-            />
         </div>
     )
 }

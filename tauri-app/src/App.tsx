@@ -1,6 +1,8 @@
 import "./App.css";
-import Home from "./pages/Home";
 import {HashRouter, Navigate, Route, Routes} from "react-router-dom";
+import {selectUser} from "./redux/user.ts";
+import RoomComponent from "./pages/Room";
+import HomeComponent from "./pages/Home";
 import Room from "./pages/Room";
 // @ts-ignore
 import GoEasy from "goeasy";
@@ -11,6 +13,16 @@ import {setUser} from "./redux/user.ts";
 import Modal from "./components/modal";
 
 function App() {
+  const user = useSelector(selectUser);
+    return (
+      <HashRouter>
+          <Routes>
+              <Route path={'/start'} element={<HomeComponent />} />
+              <Route path={`/room/:roomId`} element={<RoomComponent user={user}/>} />
+              <Route path={'*'} element={<Navigate to={'/start'} replace={true} />} />
+          </Routes>
+      </HashRouter>
+  );
     // const [goEasyInstance, setGoEasyInstance] = useState<GoEasy.IGoEasy | null>(null);\
     const goEasy = useGoEasy();
     const dispatch = useDispatch();
